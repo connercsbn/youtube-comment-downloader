@@ -30,7 +30,7 @@ def regex_search(text, pattern, group=1, default=None):
 
 def ajax_request(session, endpoint, ytcfg, retries=5, sleep=20):
     url = 'https://www.youtube.com' + endpoint['commandMetadata']['webCommandMetadata']['apiUrl']
-    
+
     data = {'context': ytcfg['INNERTUBE_CONTEXT'],
             'continuation': endpoint['continuationCommand']['token']}
 
@@ -157,19 +157,21 @@ def main(argv = None):
             sys.stdout.flush()
             start_time = time.time()
             for comment in download_comments(youtube_id, args.sort):
-                comment_json = json.dumps(comment, ensure_ascii=False)
-                print(comment_json.decode('utf-8') if isinstance(comment_json, bytes) else comment_json, file=fp)
-                count += 1
-                sys.stdout.write('Downloaded %d comment(s)\r' % count)
-                sys.stdout.flush()
-                if limit and count >= limit:
-                    break
+                if has_timestamps(comment):
+                    return comment['text']
         print('\n[{:.2f} seconds] Done!'.format(time.time() - start_time))
 
     except Exception as e:
         print('Error:', str(e))
         sys.exit(1)
 
+def has_timestamps(comment):
+    comment = comment["text"]
+    for line in comment.split('\n'):
+        if re.search(r'[0-9]{1,2}(:[0-9]{1,2}){1,3}', line):
+            if re.search(r'[a-zA-Z].*[a-zA-Z]', line):
+                return True
+    return False
 
 if __name__ == "__main__":
     main(sys.argv[1:])

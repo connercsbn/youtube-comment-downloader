@@ -159,17 +159,22 @@ def main(argv = None):
             sys.stdout.flush()
             start_time = time.time()
             for comment in download_comments(youtube_id, args.sort):
+                comment_json = json.dumps(comment, ensure_ascii=False)
+                # print(comment_json.decode('utf-8') if isinstance(comment_json, bytes) else comment_json, file=fp)
+                count += 1
+                if limit and count > limit:
+                    break
                 if has_timestamps(comment):
-                    comments_with_timestamps += comment['text']
+                    comments_with_timestamps.append(comment['text'].splitlines())
                     comment_with_timestamp_count += 1
                     if comment_with_timestamp_count > 9:
-                        return
+                        break
         print('\n[{:.2f} seconds] Done!'.format(time.time() - start_time))
-        return comments_with_timestamps
 
     except Exception as e:
         print('Error:', str(e))
         sys.exit(1)
+    return comments_with_timestamps
 
 def has_timestamps(comment):
     comment = comment["text"]

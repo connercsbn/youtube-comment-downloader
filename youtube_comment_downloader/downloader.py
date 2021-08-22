@@ -151,6 +151,8 @@ def main(argv = None):
                 os.makedirs(outdir)
 
         print('Downloading Youtube comments for video:', youtube_id)
+        comment_with_timestamp_count = 0
+        comments_with_timestamps = []
         count = 0
         with io.open(output, 'w', encoding='utf8') as fp:
             sys.stdout.write('Downloaded %d comment(s)\r' % count)
@@ -158,8 +160,12 @@ def main(argv = None):
             start_time = time.time()
             for comment in download_comments(youtube_id, args.sort):
                 if has_timestamps(comment):
-                    return comment['text']
+                    comments_with_timestamps += comment['text']
+                    comment_with_timestamp_count += 1
+                    if comment_with_timestamp_count > 9:
+                        return
         print('\n[{:.2f} seconds] Done!'.format(time.time() - start_time))
+        return comments_with_timestamps
 
     except Exception as e:
         print('Error:', str(e))
